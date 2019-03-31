@@ -112,19 +112,20 @@
 					}
 				});
 			});
-			const that = this;
 			window.onpopstate = event => {
 				event.preventDefault();
-				that.loadRoute();
+				single.loadRoute();
 			};
 			document.body.addEventListener("click", event => {
-				if(event.target instanceof HTMLAnchorElement)
+				let elm = event.target;
+				while(!(elm instanceof HTMLAnchorElement) && !(elm instanceof HTMLBodyElement))
 				{
-					if(!event.target.hasAttribute("target") && event.target.hasAttribute("href") && event.target.getAttribute("href").substr(0, 1) == "/")
-					{
-						that.loadRoute(event.target.getAttribute("href"));
-						event.preventDefault();
-					}
+					elm = elm.parentNode;
+				}
+				if(elm instanceof HTMLAnchorElement && !elm.hasAttribute("target") && elm.hasAttribute("href") && elm.getAttribute("href").substr(0, 1) == "/")
+				{
+					event.preventDefault();
+					single.loadRoute(elm.getAttribute("href"));
 				}
 			});
 			this.timeouts = [];
