@@ -20,13 +20,13 @@
 				this.title = this.elm.getAttribute("data-title");
 				this.elm.removeAttribute("data-title");
 			}
+			else if(document.querySelector("title") != null)
+			{
+				this.title = document.querySelector("title").textContent;
+			}
 			else
 			{
 				this.title = this.getCanonicalPath();
-				if(this.title == "/" && document.querySelector("title") != null)
-				{
-					this.title = document.querySelector("title").textContent;
-				}
 			}
 			this.event_handlers = {};
 		}
