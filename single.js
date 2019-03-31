@@ -196,7 +196,6 @@
 					else if(this.routes[i].paths.indexOf(path) > -1)
 					{
 						route = this.routes[i];
-						path = route.getCanonicalPath();
 						break;
 					}
 				}
