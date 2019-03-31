@@ -6,236 +6,237 @@
 	style.textContent = `[data-route]:not(.visible){display:none}`;
 	document.head.appendChild(style);
 
-	window.single = {
-		resolveElement: elm => {
-			if(!(elm instanceof HTMLElement))
-			{
-				var _elm = elm;
-				elm = document.querySelector(elm);
-				if(!(elm instanceof HTMLElement))
-				{
-					throw "Failed to resolve element: " + elm;
-				}
-			}
-			return elm;
-		},
-		route: class SingleRoute
+	class SingleRoute
+	{
+		constructor(elm)
 		{
-			constructor(elm)
+			this.elm = elm;
+			this.paths = [];
+			this.elm.getAttribute("data-route").split(",").forEach(name => {
+				this.paths.push(name.trim());
+			});
+			if(elm.hasAttribute("data-title"))
 			{
-				this.elm = elm;
-				this.paths = [];
-				this.elm.getAttribute("data-route").split(",").forEach(name => {
-					this.paths.push(name.trim());
-				});
-				if(elm.hasAttribute("data-title"))
-				{
-					this.title = this.elm.getAttribute("data-title");
-					this.elm.removeAttribute("data-title");
-				}
-				else
-				{
-					this.title = this.getCanonicalPath();
-					if(this.title == "/" && document.querySelector("title") != null)
-					{
-						this.title = document.querySelector("title").textContent;
-					}
-				}
-				this.event_handlers = {};
+				this.title = this.elm.getAttribute("data-title");
+				this.elm.removeAttribute("data-title");
 			}
+			else
+			{
+				this.title = this.getCanonicalPath();
+				if(this.title == "/" && document.querySelector("title") != null)
+				{
+					this.title = document.querySelector("title").textContent;
+				}
+			}
+			this.event_handlers = {};
+		}
 
-			getCanonicalPath()
-			{
-				if(this.paths[0].substr(0, 1) == "/")
-				{
-					return this.paths[0];
-				}
-				if(this.paths.length > 1)
-				{
-					return this.paths[1];
-				}
-				return "/" + this.paths[0];
-			}
-
-			isRegexRoute()
-			{
-				return this.paths.length == 1 && this.paths[0].substr(0, 1) == "^" && this.paths[0].substr(this.paths[0].length - 1) == "$";
-			}
-
-			getArgs(route)
-			{
-				if(this.isRegexRoute())
-				{
-					const regex = new RegExp(this.paths[0]);
-					let res = regex.exec(route);
-					if(res && res.length > 0)
-					{
-						return res;
-					}
-				}
-				return false;
-			}
-
-			on(event_name, func)
-			{
-				if(typeof func != "function")
-				{
-					throw "Event handler has to be a function.";
-				}
-				this.event_handlers[event_name] = func;
-				return this;
-			}
-
-			off(event_name)
-			{
-				delete this.event_handlers[event_name];
-				return this;
-			}
-
-			fire(event_name, args)
-			{
-				if(event_name in this.event_handlers)
-				{
-					this.event_handlers[event_name].call(this, args);
-				}
-				return this;
-			}
-		},
-		app: class SingleApp
+		getCanonicalPath()
 		{
-			constructor(wrapper)
+			if(this.paths[0].substr(0, 1) == "/")
 			{
-				this.wrapper = single.resolveElement(wrapper);
-				this.routes = [];
-				this.wrapper.querySelectorAll("[data-route]").forEach(elm => {
-					this.routes.push(new single.route(elm));
-				});
-				if(this.routes.length == 0)
+				return this.paths[0];
+			}
+			if(this.paths.length > 1)
+			{
+				return this.paths[1];
+			}
+			return "/" + this.paths[0];
+		}
+
+		isRegexRoute()
+		{
+			return this.paths.length == 1 && this.paths[0].substr(0, 1) == "^" && this.paths[0].substr(this.paths[0].length - 1) == "$";
+		}
+
+		getArgs(route)
+		{
+			if(this.isRegexRoute())
+			{
+				const regex = new RegExp(this.paths[0]);
+				let res = regex.exec(route);
+				if(res && res.length > 0)
 				{
-					throw "Your SingleApp needs at least one route.";
+					return res;
 				}
-				this.routes.forEach(route => {
-					route.paths.forEach(path => {
-						for(let i = 0; i < this.routes; i++)
-						{
-							if(this.routes[i] !== route && this.routes[i].paths.indexOf(path) > -1)
-							{
-								throw "Duplicate route path: " + path;
-							}
-						}
-					});
-				});
-				const that = this;
-				window.onpopstate = event => {
-					event.preventDefault();
-					that.loadRoute();
-				};
-				this.wrapper.addEventListener("click", event => {
-					if(event.target instanceof HTMLAnchorElement)
+			}
+			return false;
+		}
+
+		on(event_name, func)
+		{
+			if(typeof func != "function")
+			{
+				throw "Event handler has to be a function.";
+			}
+			this.event_handlers[event_name] = func;
+			return this;
+		}
+
+		off(event_name)
+		{
+			delete this.event_handlers[event_name];
+			return this;
+		}
+
+		fire(event_name, args)
+		{
+			if(event_name in this.event_handlers)
+			{
+				this.event_handlers[event_name].call(this, args);
+			}
+			return this;
+		}
+	}
+
+	class SingleApp
+	{
+		constructor()
+		{
+			this.routes = [];
+			document.body.querySelectorAll("[data-route]").forEach(elm => {
+				this.routes.push(new SingleRoute(elm));
+			});
+			if(this.routes.length == 0)
+			{
+				throw "Your SingleApp needs at least one route.";
+			}
+			this.routes.forEach(route => {
+				route.paths.forEach(path => {
+					for(let i = 0; i < this.routes; i++)
 					{
-						if(!event.target.hasAttribute("target") && event.target.hasAttribute("href") && event.target.getAttribute("href").substr(0, 1) == "/")
+						if(this.routes[i] !== route && this.routes[i].paths.indexOf(path) > -1)
 						{
-							that.loadRoute(event.target.getAttribute("href"));
-							event.preventDefault();
+							throw "Duplicate route path: " + path;
 						}
 					}
 				});
-				this.timeouts = [];
-				this.intervals = [];
-			}
+			});
+			const that = this;
+			window.onpopstate = event => {
+				event.preventDefault();
+				that.loadRoute();
+			};
+			document.body.addEventListener("click", event => {
+				if(event.target instanceof HTMLAnchorElement)
+				{
+					if(!event.target.hasAttribute("target") && event.target.hasAttribute("href") && event.target.getAttribute("href").substr(0, 1) == "/")
+					{
+						that.loadRoute(event.target.getAttribute("href"));
+						event.preventDefault();
+					}
+				}
+			});
+			this.timeouts = [];
+			this.intervals = [];
+		}
 
-			getRoute(route)
+		getRoute(route)
+		{
+			let elm = route instanceof HTMLElement;
+			if(elm)
 			{
-				let elm = route instanceof HTMLElement;
+				if(!route.hasAttribute("data-route"))
+				{
+					throw "Invalid route: " + route;
+				}
+				route = route.getAttribute("data-route").split(",")[0];
+			}
+			for(let i = 0; i < this.routes.length; i++)
+			{
+				if(this.routes[i].paths.indexOf(route) > -1)
+				{
+					return this.routes[i];
+				}
+			}
+			if(!elm)
+			{
+				elm = document.querySelector(route);
 				if(elm)
 				{
-					if(!route.hasAttribute("data-route"))
-					{
-						throw "Invalid route: " + route;
-					}
-					route = route.getAttribute("data-route").split(",")[0];
+					return this.getRoute(elm);
 				}
-				for(let i = 0; i < this.routes.length; i++)
-				{
-					if(this.routes[i].paths.indexOf(route) > -1)
-					{
-						return this.routes[i];
-					}
-				}
-				if(!elm)
-				{
-					elm = document.querySelector(route);
-					if(elm)
-					{
-						return this.getRoute(elm);
-					}
-				}
-				return null;
 			}
+			return null;
+		}
 
-			loadRoute(path)
+		loadRoute(path)
+		{
+			this.timeouts.forEach(clearTimeout);
+			this.intervals.forEach(clearInterval);
+			if(path === undefined)
 			{
-				this.timeouts.forEach(clearTimeout);
-				this.intervals.forEach(clearInterval);
-				if(path === undefined)
+				path = location.pathname.toString();
+			}
+			let route, args = false;
+			for(let i = 0; i < this.routes.length; i++)
+			{
+				if(this.routes[i].isRegexRoute())
 				{
-					path = location.pathname.toString();
-				}
-				let route, args = false;
-				for(let i = 0; i < this.routes.length; i++)
-				{
-					if(this.routes[i].isRegexRoute())
-					{
-						args = this.routes[i].getArgs(path);
-						if(args !== false)
-						{
-							route = this.routes[i];
-							break;
-						}
-					}
-					else if(this.routes[i].paths.indexOf(path) > -1)
+					args = this.routes[i].getArgs(path);
+					if(args !== false)
 					{
 						route = this.routes[i];
 						break;
 					}
 				}
-				if(route === undefined)
+				else if(this.routes[i].paths.indexOf(path) > -1)
 				{
-					route = this.getRoute("404");
-					if(route === null)
-					{
-						route = this.routes[0];
-						path = route.getCanonicalPath();
-					}
+					route = this.routes[i];
+					break;
 				}
-				if(args === false)
+			}
+			if(route === undefined)
+			{
+				route = this.getRoute("404");
+				if(route === null)
 				{
-					args = [path];
+					route = this.routes[0];
+					path = route.getCanonicalPath();
 				}
-				route.fire("beforeload", args);
-				this.routes.forEach(r => {
-					if(r !== route)
-					{
-						r.elm.classList.remove("visible");
-					}
+			}
+			if(args === false)
+			{
+				args = [path];
+			}
+			route.fire("beforeload", args);
+			this.routes.forEach(r => {
+				if(r !== route)
+				{
+					r.elm.classList.remove("visible");
+				}
+			});
+			route.elm.classList.add("visible");
+			if(location.pathname.toString() != path)
+			{
+				history.pushState({}, route.title, path);
+			}
+			document.querySelector("title").textContent = route.title;
+			route.fire("load", args);
+		}
+
+		setTimeout(f, i)
+		{
+			this.timeouts.push(window.setTimeout(f, i));
+		}
+
+		setInterval(f, i)
+		{
+			this.intervals.push(window.setInterval(f, i));
+		}
+	}
+
+	window.single = {
+		ensureLoaded: callback => {
+			if(["interactive", "complete"].indexOf(document.readyState) > -1)
+			{
+				callback.call(window.single = new SingleApp());
+			}
+			else
+			{
+				document.addEventListener("DOMContentLoaded", () => {
+					callback.call(window.single = new SingleApp());
 				});
-				route.elm.classList.add("visible");
-				if(location.pathname.toString() != path)
-				{
-					history.pushState({}, route.title, path);
-				}
-				document.querySelector("title").textContent = route.title;
-				route.fire("load", args);
-			}
-
-			setTimeout(f, i)
-			{
-				this.timeouts.push(window.setTimeout(f, i));
-			}
-
-			setInterval(f, i)
-			{
-				this.intervals.push(window.setInterval(f, i));
 			}
 		}
 	};
