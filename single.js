@@ -87,12 +87,12 @@
 			return this.paths.length == 1 && this.paths[0].substr(0, 1) == "^" && this.paths[0].substr(this.paths[0].length - 1) == "$";
 		}
 
-		getArgs(route)
+		getArgs(path)
 		{
 			if(this.isRegexRoute())
 			{
 				const regex = new RegExp(this.paths[0]);
-				let res = regex.exec(route);
+				let res = regex.exec(path);
 				if(res && res.length > 0)
 				{
 					return res;
@@ -113,7 +113,7 @@
 			});
 			if(this.routes.length == 0)
 			{
-				throw "Your SingleApp needs at least one route.";
+				throw "You need to define at least one route.";
 			}
 			this.routes.forEach(route => {
 				route.paths.forEach(path => {
@@ -121,7 +121,7 @@
 					{
 						if(this.routes[i] !== route && this.routes[i].paths.indexOf(path) > -1)
 						{
-							throw "Duplicate route path: " + path;
+							throw "Duplicate path: " + path;
 						}
 					}
 				});
@@ -153,7 +153,7 @@
 			{
 				if(!route.hasAttribute("data-route"))
 				{
-					throw "Invalid route: " + route;
+					throw "Invalid route element: " + route;
 				}
 				route = route.getAttribute("data-route").split(",")[0];
 			}

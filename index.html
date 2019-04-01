@@ -31,7 +31,7 @@
 			single.getRoute("404").on("load", function(args)
 			{
 				document.getElementById("file").textContent = args[0];
-				// Use the single.setTimeout and .setInterval functions so they are automatically stopped when the site is switched.
+				// Use the single.setTimeout and .setInterval functions so they are automatically stopped when a new route is loaded.
 				single.setTimeout(function()
 				{
 					single.loadRoute("/");
