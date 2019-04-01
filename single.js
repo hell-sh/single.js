@@ -6,10 +6,44 @@
 	style.textContent = `[data-route]:not(.visible){display:none}`;
 	document.head.appendChild(style);
 
-	class SingleRoute
+	class SingleEventEmitter
+	{
+		constructor()
+		{
+			this.event_handlers = {};
+		}
+
+		on(event_name, func)
+		{
+			if(typeof func != "function")
+			{
+				throw "Event handler has to be a function.";
+			}
+			this.event_handlers[event_name] = func;
+			return this;
+		}
+
+		off(event_name)
+		{
+			delete this.event_handlers[event_name];
+			return this;
+		}
+
+		fire(event_name, args)
+		{
+			if(event_name in this.event_handlers)
+			{
+				this.event_handlers[event_name].call(this, args);
+			}
+			return this;
+		}
+	}
+
+	class SingleRoute extends SingleEventEmitter
 	{
 		constructor(elm)
 		{
+			super();
 			this.elm = elm;
 			this.paths = [];
 			this.elm.getAttribute("data-route").split(",").forEach(name => {
@@ -28,7 +62,6 @@
 			{
 				this.title = this.getCanonicalPath();
 			}
-			this.event_handlers = {};
 		}
 
 		get element()
@@ -67,37 +100,13 @@
 			}
 			return false;
 		}
-
-		on(event_name, func)
-		{
-			if(typeof func != "function")
-			{
-				throw "Event handler has to be a function.";
-			}
-			this.event_handlers[event_name] = func;
-			return this;
-		}
-
-		off(event_name)
-		{
-			delete this.event_handlers[event_name];
-			return this;
-		}
-
-		fire(event_name, args)
-		{
-			if(event_name in this.event_handlers)
-			{
-				this.event_handlers[event_name].call(this, args);
-			}
-			return this;
-		}
 	}
 
-	class SingleApp
+	class SingleApp extends SingleEventEmitter
 	{
 		constructor()
 		{
+			super();
 			this.routes = [];
 			document.body.querySelectorAll("[data-route]").forEach(elm => {
 				this.routes.push(new SingleRoute(elm));
@@ -219,6 +228,10 @@
 			}
 			document.querySelector("title").textContent = route.title;
 			route.fire("load", args);
+			this.fire("route_load", {
+				route: route,
+				args: args
+			});
 		}
 
 		setTimeout(f, i)

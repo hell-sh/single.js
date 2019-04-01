@@ -19,9 +19,9 @@
 			<li><a href="/wild/cards">Somewhere with wild cards</a></li>
 		</ul>
 	</div>
-	<div id="wild-route" data-route="^/wild/(.+)$">
+	<div id="wild" data-route="^/wild/(.+)$">
 		<!-- A site with a regex route may only have one path. -->
-		<h1>Somewhere with wild <span id="wild"></span></h1>
+		<h1>Somewhere with wild <span></span></h1>
 		<p>Hint: Try editing the path.</p>
 	</div>
 	<script src="/single.js"></script> <!-- also available on cdn.hell.sh: https://cdn.hell.sh/#single.js -->
@@ -37,11 +37,16 @@
 					single.loadRoute("/");
 				}, 2000);
 			});
-			single.getRoute("#wild-route").on("beforeload", function(args)
+			single.getRoute("#wild").on("beforeload", function(args)
 			{
 				args[1] = decodeURIComponent(args[1]); // Paths are not URL-decoded by single.js
 				this.title = "Somewhere with wild " + args[1]; // Title can only be modified in the "beforeload" event.
-				document.getElementById("wild").textContent = args[1];
+				this.element.querySelector("span").textContent = args[1];
+			});
+			single.on("route_load", function(event)
+			{
+				// This event is called when any route is loaded, and may be used for navbars, etc.
+				console.log(event.route.title, "loaded");
 			});
 			single.loadRoute(); // Instruct single.js to load the user's currently selected route, as our event handlers are now registed.
 		});
