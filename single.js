@@ -228,7 +228,7 @@
 	}
 
 	window.single = {
-		ensureLoaded: callback => {
+		load: callback => {
 			if(["interactive", "complete"].indexOf(document.readyState) > -1)
 			{
 				callback.call(window.single = new SingleApp());
@@ -239,6 +239,7 @@
 					callback.call(window.single = new SingleApp());
 				});
 			}
-		}
+		},
+		ensureLoaded: callback => single.load(callback)
 	};
 })();

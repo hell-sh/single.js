@@ -26,7 +26,7 @@
 	</div>
 	<script src="/single.js"></script> <!-- also available on cdn.hell.sh: https://cdn.hell.sh/#single.js -->
 	<script>
-		single.ensureLoaded(function() // Ensuring the DOM is loaded and single.js knows all routes before asking about them.
+		single.load(function() // Initializing single.js
 		{
 			single.getRoute("404").on("load", function(args)
 			{
