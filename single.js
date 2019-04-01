@@ -31,6 +31,11 @@
 			this.event_handlers = {};
 		}
 
+		get element()
+		{
+			return this.elm;
+		}
+
 		getCanonicalPath()
 		{
 			if(this.paths[0].substr(0, 1) == "/")
