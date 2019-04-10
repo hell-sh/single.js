@@ -219,6 +219,10 @@
 				args = [path];
 			}
 			route.fire("beforeload", args);
+			this.fire("route_beforeload", {
+				route: route,
+				args: args
+			});
 			this.routes.forEach(r => {
 				if(r !== route)
 				{
