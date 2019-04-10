@@ -19,8 +19,8 @@
 			<li><a href="/wild/cards">Somewhere with wild cards</a></li>
 		</ul>
 	</div>
-	<div id="wild" data-route="^/wild/(.+)$">
-		<!-- A site with a regex route may only have one path. -->
+	<div id="wild" data-route="~ ^/wild/(.+)$">
+		<!-- A regex route can only have one path as data-route must be "~ " followed by the regex. -->
 		<h1>Somewhere with wild <span></span></h1>
 		<p>Hint: Try editing the path.</p>
 	</div>

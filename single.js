@@ -6,7 +6,7 @@
 	style.textContent = `[data-route]:not(.visible){display:none}`;
 	document.head.appendChild(style);
 
-	class SingleEventEmitter
+	class EventEmitter
 	{
 		constructor()
 		{
@@ -39,16 +39,14 @@
 		}
 	}
 
-	class SingleRoute extends SingleEventEmitter
+	class Route extends EventEmitter
 	{
-		constructor(elm)
+		constructor(elm, paths)
 		{
 			super();
 			this.elm = elm;
-			this.paths = [];
-			this.elm.getAttribute("data-route").split(",").forEach(name => {
-				this.paths.push(name.trim());
-			});
+			this.paths = paths;
+			this.title = undefined;
 			if(elm.hasAttribute("data-title"))
 			{
 				this.title = this.elm.getAttribute("data-title");
@@ -60,13 +58,25 @@
 			}
 			else
 			{
-				this.title = this.getCanonicalPath();
+				this.title = this.paths[0];
 			}
 		}
 
 		get element()
 		{
 			return this.elm;
+		}
+	}
+
+	class DefaultRoute extends Route
+	{
+		constructor(elm)
+		{
+			let paths = [];
+			elm.getAttribute("data-route").split(",").forEach(name => {
+				paths.push(name.trim());
+			});
+			super(elm, paths);
 		}
 
 		getCanonicalPath()
@@ -81,35 +91,42 @@
 			}
 			return "/" + this.paths[0];
 		}
+	}
 
-		isRegexRoute()
+	class RegexRoute extends Route
+	{
+		constructor(elm)
 		{
-			return this.paths.length == 1 && this.paths[0].substr(0, 1) == "^" && this.paths[0].substr(this.paths[0].length - 1) == "$";
+			super(elm, [elm.getAttribute("data-route").substr(2)]);
+			this.regex = new RegExp(this.paths[0]);
 		}
 
 		getArgs(path)
 		{
-			if(this.isRegexRoute())
+			let res = this.regex.exec(path);
+			if(res && res.length > 0)
 			{
-				const regex = new RegExp(this.paths[0]);
-				let res = regex.exec(path);
-				if(res && res.length > 0)
-				{
-					return res;
-				}
+				return res;
 			}
 			return false;
 		}
 	}
 
-	class SingleApp extends SingleEventEmitter
+	class SingleApp extends EventEmitter
 	{
 		constructor()
 		{
 			super();
 			this.routes = [];
 			document.body.querySelectorAll("[data-route]").forEach(elm => {
-				this.routes.push(new SingleRoute(elm));
+				if(elm.getAttribute("data-route").substr(0, 2) == "~ ")
+				{
+					this.routes.push(new RegexRoute(elm));
+				}
+				else
+				{
+					this.routes.push(new DefaultRoute(elm));
+				}
 			});
 			if(this.routes.length == 0)
 			{
@@ -157,6 +174,10 @@
 				}
 				route = route.getAttribute("data-route").split(",")[0];
 			}
+			if(route.substr(0, 2) == "~ ")
+			{
+				route = route.substr(2);
+			}
 			for(let i = 0; i < this.routes.length; i++)
 			{
 				if(this.routes[i].paths.indexOf(route) > -1)
@@ -190,7 +211,7 @@
 			let route, args = false;
 			for(let i = 0; i < this.routes.length; i++)
 			{
-				if(this.routes[i].isRegexRoute())
+				if(this.routes[i] instanceof RegexRoute)
 				{
 					args = this.routes[i].getArgs(path);
 					if(args !== false)
