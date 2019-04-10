@@ -166,11 +166,15 @@
 			}
 			if(!elm)
 			{
-				elm = document.querySelector(route);
-				if(elm)
+				try
 				{
-					return this.getRoute(elm);
+					elm = document.querySelector(route);
+					if(elm)
+					{
+						return this.getRoute(elm);
+					}
 				}
+				catch(ignored){}
 			}
 			return null;
 		}
