@@ -274,19 +274,15 @@
 		}
 	}
 
-	window.single = {
-		load: callback => {
-			if(["interactive", "complete"].indexOf(document.readyState) > -1)
-			{
-				callback.call(window.single = new SingleApp());
-			}
-			else
-			{
-				document.addEventListener("DOMContentLoaded", () => {
-					callback.call(window.single = new SingleApp());
-				});
-			}
-		},
-		ensureLoaded: callback => single.load(callback)
-	};
+	console.assert(!("single" in window));
+	window.single = new SingleApp();
+	if(["interactive", "complete"].indexOf(document.readyState) > -1)
+	{
+		console.warn("single.js was loaded in too late. this will cause issues if you depend on single.js events.");
+		window.single.loadRoute();
+	}
+	else
+	{
+		document.addEventListener("DOMContentLoaded", () => window.single.loadRoute());
+	}
 })();

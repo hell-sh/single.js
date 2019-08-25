@@ -26,29 +26,23 @@
 	</div>
 	<script src="/single.js"></script> <!-- also available on cdn.hell.sh: https://cdn.hell.sh/#single.js -->
 	<script>
-		single.load(function() // Initializing single.js
+		// Registering our single.js event handlers. Note that this is before the DOM has finished loading.
+		single.getRoute("404").on("load", function(args)
 		{
-			single.getRoute("404").on("load", function(args)
-			{
-				document.getElementById("file").textContent = args[0];
-				// Use the single.setTimeout and .setInterval functions so they are automatically stopped when a new route is loaded.
-				single.setTimeout(function()
-				{
-					single.loadRoute("/");
-				}, 2000);
-			});
-			single.getRoute("#wild").on("beforeload", function(args)
-			{
-				args[1] = decodeURIComponent(args[1]); // Paths are not URL-decoded by single.js
-				this.title = "Somewhere with wild " + args[1]; // Title can only be modified in the "beforeload" event.
-				this.element.querySelector("span").textContent = args[1];
-			});
-			single.on("route_load", function(event)
-			{
-				// This event is called when any route is loaded, and may be used for navbars, etc.
-				console.log(event.route.title, "loaded");
-			});
-			single.loadRoute(); // Instruct single.js to load the user's currently selected route, as our event handlers are now registed.
+			document.getElementById("file").textContent = args[0];
+			// Use the single.setTimeout and .setInterval functions so they are automatically stopped when a new route is loaded.
+			single.setTimeout(() => single.loadRoute("/"), 2000);
+		});
+		single.getRoute("#wild").on("beforeload", function(args)
+		{
+			args[1] = decodeURIComponent(args[1]); // Paths are not URL-decoded by single.js
+			this.title = "Somewhere with wild " + args[1]; // Title can only be modified in the "beforeload" event.
+			this.element.querySelector("span").textContent = args[1];
+		});
+		single.on("route_load", function(event)
+		{
+			// This event is called when any route is loaded, and may be used for navbars, etc.
+			console.log(event.route.title, "loaded");
 		});
 	</script>
 </body>
