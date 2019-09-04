@@ -172,9 +172,17 @@
 				{
 					throw "Invalid route element: " + route;
 				}
-				route = route.getAttribute("data-route").split(",")[0];
+				route = route.getAttribute("data-route");
+				if(route.substr(0, 2) == "~ ")
+				{
+					route = route.substr(2);
+				}
+				else
+				{
+					route = route.split(",")[0];
+				}
 			}
-			if(route.substr(0, 2) == "~ ")
+			else if(route.substr(0, 2) == "~ ")
 			{
 				route = route.substr(2);
 			}
