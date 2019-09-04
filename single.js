@@ -68,7 +68,7 @@
 		}
 	}
 
-	class DefaultRoute extends Route
+	class StandardRoute extends Route
 	{
 		constructor(elm)
 		{
@@ -125,7 +125,7 @@
 				}
 				else
 				{
-					this.routes.push(new DefaultRoute(elm));
+					this.routes.push(new StandardRoute(elm));
 				}
 			});
 			if(this.routes.length == 0)
