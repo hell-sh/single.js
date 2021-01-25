@@ -156,7 +156,7 @@
 				if(elm instanceof HTMLAnchorElement && !elm.hasAttribute("target") && elm.hasAttribute("href") && elm.getAttribute("href").substr(0, 1) == "/")
 				{
 					event.preventDefault();
-					single.loadRoute(elm.getAttribute("href"));
+					single.loadRoute(new URL(elm.href));
 				}
 			});
 			this.timeouts = [];
@@ -212,11 +212,16 @@
 		{
 			this.timeouts.forEach(clearTimeout);
 			this.intervals.forEach(clearInterval);
+			let route, args = false, urlextra = "";
 			if(path === undefined)
 			{
 				path = location.pathname.toString();
 			}
-			let route, args = false;
+			else if(path instanceof URL)
+			{
+				urlextra = path.search + path.hash;
+				path = path.pathname;
+			}
 			for(let i = 0; i < this.routes.length; i++)
 			{
 				if(this.routes[i] instanceof RegexRoute)
@@ -259,6 +264,7 @@
 				}
 			});
 			route.elm.classList.add("visible");
+			path += urlextra;
 			if(location.pathname.toString() != path)
 			{
 				history.pushState({}, route.title, path);
