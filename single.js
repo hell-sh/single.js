@@ -212,12 +212,16 @@
 		{
 			this.timeouts.forEach(clearTimeout);
 			this.intervals.forEach(clearInterval);
-			let route, args = false, urlextra = "";
 			if(path === undefined)
 			{
-				path = location.pathname.toString();
+				path = new URL(location.href);
 			}
-			else if(path instanceof URL)
+			else if(typeof path == "string" && path.substr(0, 1) == "/")
+			{
+				path = new URL(location.protocol + location.hostname + path);
+			}
+			let route, args = false, urlextra = "";
+			if(path instanceof URL)
 			{
 				urlextra = path.search + path.hash;
 				path = path.pathname;
