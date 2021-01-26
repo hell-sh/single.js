@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Hell.sh
+// Copyright (c) Hell.sh
 
 (function()
 {
