@@ -252,6 +252,10 @@
 					path = route.getCanonicalPath();
 				}
 			}
+			if(path.substr(0,1)!="/")
+			{
+				path=route.getCanonicalPath();
+			}
 			if(args === false)
 			{
 				args = [path];
