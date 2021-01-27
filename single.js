@@ -130,7 +130,7 @@
 			});
 			if(this.routes.length == 0)
 			{
-				throw "You need to define at least one route.";
+				console.error("[single.js] You need to define at least one route");
 			}
 			this.routes.forEach(route => {
 				route.paths.forEach(path => {
@@ -138,7 +138,7 @@
 					{
 						if(this.routes[i] !== route && this.routes[i].paths.indexOf(path) > -1)
 						{
-							throw "Duplicate path: " + path;
+							console.error("[single.js] Duplicate path: " + path);
 						}
 					}
 				});
