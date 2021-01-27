@@ -1,6 +1,6 @@
 # single.js
 
-Single-page websites, simplified.
+The simple framework for single-page websites.
 
 [Try the demo!](https://singlejs.hell.sh/)
 
