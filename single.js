@@ -278,11 +278,11 @@
 				history.pushState({}, route.title, path);
 			}
 			document.querySelector("title").textContent = route.title;
-			route.fire("load", args);
 			this.fire("route_load", {
 				route: route,
 				args: args
 			});
+			route.fire("load", args);
 		}
 
 		setTimeout(f, i)
