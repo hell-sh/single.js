@@ -1,5 +1,3 @@
-// Copyright (c) Hell.sh
-
 (function()
 {
 	let style = document.createElement("style");
