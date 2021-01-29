@@ -1,6 +1,7 @@
 (function()
 {
-	let style = document.createElement("style");
+	let head_include=(document.body==null),
+	style = document.createElement("style");
 	style.textContent = `[data-route]:not(.visible){display:none}`;
 	document.head.appendChild(style);
 
@@ -116,6 +117,25 @@
 		{
 			super();
 			this.routes = [];
+			this.routes_populated = false;
+			if(!head_include)
+			{
+				this.populateRoutes();
+			}
+			window.onpopstate = event => {
+				event.preventDefault();
+				single.loadRoute();
+			};
+			this.timeouts = [];
+			this.intervals = [];
+		}
+
+		populateRoutes()
+		{
+			if(this.routes_populated)
+			{
+				return;
+			}
 			document.body.querySelectorAll("[data-route]").forEach(elm => {
 				if(elm.getAttribute("data-route").substr(0, 2) == "~ ")
 				{
@@ -141,10 +161,6 @@
 					}
 				});
 			});
-			window.onpopstate = event => {
-				event.preventDefault();
-				single.loadRoute();
-			};
 			document.body.addEventListener("click", event => {
 				let elm = event.target;
 				while(!(elm instanceof HTMLAnchorElement) && !(elm instanceof HTMLBodyElement))
@@ -157,12 +173,12 @@
 					single.loadRoute(new URL(elm.href));
 				}
 			});
-			this.timeouts = [];
-			this.intervals = [];
+			this.routes_populated = true;
 		}
 
 		getRoute(route)
 		{
+			this.populateRoutes();
 			let elm = route instanceof HTMLElement;
 			if(elm)
 			{
@@ -208,6 +224,7 @@
 
 		loadRoute(path)
 		{
+			this.populateRoutes();
 			this.timeouts.forEach(clearTimeout);
 			this.intervals.forEach(clearInterval);
 			if(path === undefined)
@@ -298,7 +315,6 @@
 	window.single = new SingleApp();
 	if(["interactive", "complete"].indexOf(document.readyState) > -1)
 	{
-		console.warn("single.js was loaded in too late. this will cause issues if you depend on single.js events.");
 		window.single.loadRoute();
 	}
 	else
