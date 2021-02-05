@@ -5,6 +5,20 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="https://cdn.hell.sh/basic.css/latest/basic.css" crossorigin="anonymous">
 	<script src="/single.js"></script> <!-- also available on cdn.hell.sh: https://cdn.hell.sh/#single.js -->
+	<style>
+		#overlay
+		{
+			position: fixed;
+			top: calc(20% - 10px);
+			left: calc(20% - 10px);
+			width: calc(60% - 10px);
+			height: calc(60% - 10px);
+			z-index: 100;
+			box-shadow: 0 5px 40px #000;
+			border-radius: 10px;
+			padding: 20px;
+		}
+	</style>
 </head>
 <body>
 	<div data-route="404" data-title="That's a 404!">
@@ -18,12 +32,16 @@
 		<ul>
 			<li><a href="/somewhere">Somewhere that doesn't exist</a></li>
 			<li><a href="/wild/cards">Somewhere with wild cards</a></li>
+			<li><a href="/overlay">Somewhere that is an overlay</a></li>
 		</ul>
 	</div>
 	<div id="wild" data-route="~ ^/wild/(.+)$">
 		<!-- A regex route can only have one path as data-route must be "~ " followed by the regex. -->
 		<h1>Somewhere with wild <span></span></h1>
 		<p>Hint: Try editing the path.</p>
+	</div>
+	<div id="overlay" data-route="overlay: /overlay">
+		<h1>I'm an overlay!</h1>
 	</div>
 	<script>
 		// Registering our single.js event handlers. Note that this is before the DOM has finished loading.

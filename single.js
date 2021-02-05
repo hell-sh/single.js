@@ -2,7 +2,7 @@
 {
 	let head_include=(document.body==null),
 	style = document.createElement("style");
-	style.textContent = `[data-route]:not(.visible){display:none}`;
+	style.textContent = `[data-route]:not(.route-visible){display:none}`;
 	document.head.appendChild(style);
 
 	class EventEmitter
@@ -67,12 +67,12 @@
 		}
 	}
 
-	class StandardRoute extends Route
+	class MultiRoute extends Route
 	{
-		constructor(elm)
+		constructor(elm, paths_data)
 		{
 			let paths = [];
-			elm.getAttribute("data-route").split(",").forEach(name => {
+			paths_data.split(",").forEach(name => {
 				paths.push(name.trim());
 			});
 			super(elm, paths);
@@ -89,6 +89,22 @@
 				return this.paths[1];
 			}
 			return "/" + this.paths[0];
+		}
+	}
+
+	class StandardRoute extends MultiRoute
+	{
+		constructor(elm, paths)
+		{
+			super(elm, elm.getAttribute("data-route"));
+		}
+	}
+
+	class OverlayRoute extends MultiRoute
+	{
+		constructor(elm)
+		{
+			super(elm, elm.getAttribute("data-route").substr(9));
 		}
 	}
 
@@ -140,6 +156,10 @@
 				if(elm.getAttribute("data-route").substr(0, 2) == "~ ")
 				{
 					this.routes.push(new RegexRoute(elm));
+				}
+				else if(elm.getAttribute("data-route").substr(0, 9) == "overlay: ")
+				{
+					this.routes.push(new OverlayRoute(elm));
 				}
 				else
 				{
@@ -283,10 +303,14 @@
 			this.routes.forEach(r => {
 				if(r !== route)
 				{
-					r.elm.classList.remove("visible");
+					r.elm.classList.remove("route-current");
+					if(!(route instanceof OverlayRoute))
+					{
+						r.elm.classList.remove("route-visible");
+					}
 				}
 			});
-			route.elm.classList.add("visible");
+			route.elm.classList.add("route-current", "route-visible");
 			path += urlextra;
 			if(location.pathname.toString() != path)
 			{
