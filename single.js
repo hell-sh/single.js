@@ -312,7 +312,7 @@
 			});
 			route.elm.classList.add("route-current", "route-visible");
 			path += urlextra;
-			if(location.pathname.toString() != path)
+			if(this.getCurrentPath() != path)
 			{
 				history.pushState({}, route.title, path);
 			}
@@ -322,6 +322,11 @@
 				args: args
 			});
 			route.fire("load", args);
+		}
+
+		getCurrentPath()
+		{
+			return location.pathname + location.search + location.hash;
 		}
 
 		setTimeout(f, i)
