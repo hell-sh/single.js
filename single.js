@@ -65,6 +65,16 @@
 		{
 			return this.elm;
 		}
+
+		isCurrent()
+		{
+			return this.elm.classList.contains("route-current");
+		}
+
+		isVisible()
+		{
+			return this.elm.classList.contains("route-visible");
+		}
 	}
 
 	class MultiRoute extends Route
