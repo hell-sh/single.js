@@ -334,6 +334,11 @@
 			route.fire("load", args);
 		}
 
+		getCurrentRoute()
+		{
+			return this.getRoute(".route-current");
+		}
+
 		getCurrentPath()
 		{
 			return location.pathname + location.search + location.hash;
