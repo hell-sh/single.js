@@ -128,6 +128,10 @@
 
 		getArgs(path)
 		{
+			if(path===undefined)
+			{
+				path=single.getCurrentPath();
+			}
 			let res = this.regex.exec(path);
 			if(res && res.length > 0)
 			{
