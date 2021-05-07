@@ -40,9 +40,10 @@
 
 	class Route extends EventEmitter
 	{
-		constructor(elm, paths)
+		constructor(overlay, elm, paths)
 		{
 			super();
+			this.overlay = overlay;
 			this.elm = elm;
 			this.paths = paths;
 			this.title = undefined;
@@ -79,13 +80,17 @@
 
 	class MultiRoute extends Route
 	{
-		constructor(elm, paths_data)
+		constructor(overlay, elm, paths_data)
 		{
+			if(overlay)
+			{
+				paths_data = paths_data.substr(9);
+			}
 			let paths = [];
 			paths_data.split(",").forEach(name => {
 				paths.push(name.trim());
 			});
-			super(elm, paths);
+			super(overlay, elm, paths);
 		}
 
 		getCanonicalPath()
@@ -104,26 +109,23 @@
 
 	class StandardRoute extends MultiRoute
 	{
-		constructor(elm, paths)
+		constructor(overlay, elm, paths)
 		{
-			super(elm, elm.getAttribute("data-route"));
-		}
-	}
-
-	class OverlayRoute extends MultiRoute
-	{
-		constructor(elm)
-		{
-			super(elm, elm.getAttribute("data-route").substr(9));
+			super(overlay, elm, elm.getAttribute("data-route"));
 		}
 	}
 
 	class RegexRoute extends Route
 	{
-		constructor(elm)
+		constructor(overlay, elm)
 		{
-			super(elm, [elm.getAttribute("data-route").substr(2)]);
-			this.regex = new RegExp(this.paths[0]);
+			let regexp = elm.getAttribute("data-route").substr(2);
+			if(overlay)
+			{
+				regexp = regexp.substr(9);
+			}
+			super(overlay, elm, [regexp]);
+			this.regex = new RegExp(regexp);
 		}
 
 		getArgs(path)
@@ -167,17 +169,19 @@
 				return;
 			}
 			document.body.querySelectorAll("[data-route]").forEach(elm => {
-				if(elm.getAttribute("data-route").substr(0, 2) == "~ ")
+				let data = elm.getAttribute("data-route"), overlay = false;
+				if(data.substr(0, 9) == "overlay: ")
 				{
-					this.routes.push(new RegexRoute(elm));
+					data = data.substr(9);
+					overlay = true;
 				}
-				else if(elm.getAttribute("data-route").substr(0, 9) == "overlay: ")
+				if(data.substr(0, 2) == "~ ")
 				{
-					this.routes.push(new OverlayRoute(elm));
+					this.routes.push(new RegexRoute(overlay, elm));
 				}
 				else
 				{
-					this.routes.push(new StandardRoute(elm));
+					this.routes.push(new StandardRoute(overlay, elm));
 				}
 			});
 			if(this.routes.length == 0)
@@ -213,14 +217,18 @@
 		getRoute(route)
 		{
 			this.populateRoutes();
-			let elm = route instanceof HTMLElement;
-			if(elm)
+			let is_elm = (route instanceof HTMLElement);
+			if(is_elm)
 			{
 				if(!route.hasAttribute("data-route"))
 				{
 					throw "Invalid route element: " + route;
 				}
 				route = route.getAttribute("data-route");
+				if(route.substr(0, 9) == "overlay: ")
+				{
+					route = route.substr(9);
+				}
 				if(route.substr(0, 2) == "~ ")
 				{
 					route = route.substr(2);
@@ -230,9 +238,16 @@
 					route = route.split(",")[0];
 				}
 			}
-			else if(route.substr(0, 2) == "~ ")
+			else
 			{
-				route = route.substr(2);
+				if(route.substr(0, 9) == "overlay: ")
+				{
+					route = route.substr(9);
+				}
+				if(route.substr(0, 2) == "~ ")
+				{
+					route = route.substr(2);
+				}
 			}
 			for(let i = 0; i < this.routes.length; i++)
 			{
@@ -241,19 +256,31 @@
 					return this.routes[i];
 				}
 			}
-			if(!elm)
+			if(!is_elm)
 			{
-				try
-				{
-					elm = document.querySelector(route);
-					if(elm)
-					{
-						return this.getRoute(elm);
-					}
-				}
-				catch(ignored){}
+				return this.getRoutes(route)[0];
 			}
-			return null;
+		}
+
+		getRoutes(route)
+		{
+			let routes=[];
+			try
+			{
+				document.querySelectorAll(route).forEach(elm=>{
+					try
+					{
+						let route=this.getRoute(elm);
+						if(route)
+						{
+							routes.push(route);
+						}
+					}
+					catch(ignored){}
+				});
+			}
+			catch(ignored){}
+			return routes;
 		}
 
 		loadRoute(path)
@@ -318,7 +345,7 @@
 				if(r !== route)
 				{
 					r.elm.classList.remove("route-current");
-					if(!(route instanceof OverlayRoute))
+					if(!route.overlay)
 					{
 						r.elm.classList.remove("route-visible");
 					}

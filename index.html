@@ -6,7 +6,7 @@
 	<link rel="stylesheet" href="https://cdn.hell.sh/basic.css/latest/basic.css" crossorigin="anonymous">
 	<script src="/single.js"></script> <!-- also available on cdn.hell.sh: https://cdn.hell.sh/#single.js -->
 	<style>
-		#overlay
+		.overlay
 		{
 			position: fixed;
 			top: calc(20% - 10px);
@@ -33,15 +33,19 @@
 			<li><a href="/somewhere">Somewhere that doesn't exist</a></li>
 			<li><a href="/wild/cards">Somewhere with wild cards</a></li>
 			<li><a href="/overlay">Somewhere that is an overlay</a></li>
+			<li><a href="/overlay/overlay">Somewhere that is a wild overlay</a></li>
 		</ul>
 	</div>
-	<div id="wild" data-route="~ ^/wild/(.+)$">
+	<div class="wild" data-route="~ ^/wild/(.+)$">
 		<!-- A regex route can only have one path as data-route must be "~ " followed by the regex. -->
 		<h1>Somewhere with wild <span></span></h1>
 		<p>Hint: Try editing the path.</p>
 	</div>
-	<div id="overlay" data-route="overlay: /overlay">
+	<div class="overlay" data-route="overlay: /overlay">
 		<h1>I'm an overlay!</h1>
+	</div>
+	<div class="overlay wild" data-route="overlay: ~ ^/overlay/(.+)$">
+		<h1>I'm a wild <span></span>!</h1>
 	</div>
 	<script>
 		// Registering our single.js event handlers. Note that this is before the DOM has finished loading.
@@ -51,12 +55,12 @@
 			// Use the single.setTimeout and .setInterval functions so they are automatically stopped when a new route is loaded.
 			single.setTimeout(() => single.loadRoute("/"), 2000);
 		});
-		single.getRoute("#wild").on("beforeload", function(args)
+		single.getRoutes(".wild").forEach(route=>route.on("beforeload", function(args)
 		{
 			args[1] = decodeURIComponent(args[1]); // Paths are not URL-decoded by single.js
 			this.title = "Somewhere with wild " + args[1]; // Title can only be modified in the "beforeload" event.
 			this.element.querySelector("span").textContent = args[1];
-		});
+		}));
 		single.on("route_load", function(event)
 		{
 			// This event is called when any route is loaded, and may be used for navbars, etc.
