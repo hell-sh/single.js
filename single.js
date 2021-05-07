@@ -345,7 +345,7 @@
 				if(r !== route)
 				{
 					r.elm.classList.remove("route-current");
-					if(!route.overlay)
+					if(!route.overlay || r.overlay)
 					{
 						r.elm.classList.remove("route-visible");
 					}
